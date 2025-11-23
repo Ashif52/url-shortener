@@ -1,5 +1,9 @@
+// app/page.tsx
 import UrlShortenerContainer from "@/components/url-shortener-container";
 import { prisma } from "@/lib/db";
+
+// Always render this page dynamically so views update
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
@@ -17,10 +21,10 @@ export default async function HomePage() {
   }));
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-950 to-black text-slate-50 flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-3xl">
-        <div className="mb-8 text-center space-y-3">
-          <span className="inline-flex items-center rounded-full border border-slate-700/70 bg-slate-900/60 px-3 py-1 text-xs font-medium text-slate-300 shadow-sm">
+    <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900 text-slate-50 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-4xl">
+        <div className="mb-8 text-center space-y-4">
+          <span className="inline-flex items-center rounded-full border border-slate-700/60 bg-slate-900/70 px-3 py-1 text-xs font-medium text-slate-300 shadow-sm">
             ⚡ Your own URL shortener
           </span>
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
@@ -32,12 +36,12 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 shadow-2xl shadow-slate-950/60 backdrop-blur-md px-4 py-5 md:px-6 md:py-6 space-y-6">
+        <div className="rounded-2xl border border-slate-800/70 bg-slate-900/80 shadow-2xl shadow-slate-950/60 backdrop-blur-md px-4 py-5 md:px-6 md:py-6 space-y-6">
           <UrlShortenerContainer initialUrls={initialUrls} />
         </div>
 
         <p className="mt-4 text-center text-xs text-slate-500">
-          Built with Next.js, Prisma & Postgres (Neon)
+          Built with Next.js, Prisma &amp; Postgres (Neon)
         </p>
       </div>
     </main>
