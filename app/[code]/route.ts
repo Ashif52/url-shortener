@@ -1,14 +1,14 @@
 // app/[code]/route.ts
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
-// Note: In Next.js 16, the router types expect `params` to be a Promise
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ code: string }> }
+  context: { params: Promise<{ code: string }> }
 ) {
   try {
-    const { code } = await params;
+    // 👇 Next 16: params is a Promise, so we await it
+    const { code } = await context.params;
 
     if (!code) {
       return NextResponse.json({ error: "Missing code" }, { status: 400 });
