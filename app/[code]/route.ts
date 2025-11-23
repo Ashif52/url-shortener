@@ -1,12 +1,14 @@
-import { NextResponse, NextRequest } from "next/server";
+// app/[code]/route.ts
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 
+// Note: In Next.js 16, the router types expect `params` to be a Promise
 export async function GET(
   req: NextRequest,
-  context: { params: { code: string } }
+  { params }: { params: Promise<{ code: string }> }
 ) {
   try {
-    const code = context.params.code;
+    const { code } = await params;
 
     if (!code) {
       return NextResponse.json({ error: "Missing code" }, { status: 400 });
@@ -28,6 +30,9 @@ export async function GET(
     return NextResponse.redirect(record.target);
   } catch (err) {
     console.error("Redirect error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
