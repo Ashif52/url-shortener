@@ -1,16 +1,12 @@
-// app/[code]/route.ts
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 
-type RouteContext = {
-  params: {
-    code: string;
-  };
-};
-
-export async function GET(req: NextRequest, { params }: RouteContext) {
+export async function GET(
+  req: NextRequest,
+  context: { params: { code: string } }
+) {
   try {
-    const code = params.code;
+    const code = context.params.code;
 
     if (!code) {
       return NextResponse.json({ error: "Missing code" }, { status: 400 });
@@ -32,9 +28,6 @@ export async function GET(req: NextRequest, { params }: RouteContext) {
     return NextResponse.redirect(record.target);
   } catch (err) {
     console.error("Redirect error:", err);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
