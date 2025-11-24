@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    // 🔹 read or create ownerId from cookies
     const cookieHeader = req.headers.get("cookie") || "";
     let ownerId =
       cookieHeader
@@ -29,25 +28,22 @@ export async function POST(req: NextRequest) {
 
     const shortCode = generateCode();
 
-    // 🔹 store the LONG URL in DB (target/original)
     const record = await prisma.url.create({
       data: {
         orginalUrl: url,
         shortCode,
-        target: url,   // long URL we will redirect to
+        target: url,  
         ownerId,
       },
     });
 
-    // 🔹 build the REAL short URL on our domain
     const base =
       process.env.NEXT_PUBLIC_BASE_URL ?? req.nextUrl.origin;
     const shortUrl = `${base}/${record.shortCode}`;
 
-    // 🔹 send response + set cookie
     const res = NextResponse.json(
       {
-        shortUrl,           // ✅ now really short
+        shortUrl,          
         code: record.shortCode,
       },
       { status: 200 }
