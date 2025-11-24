@@ -1,4 +1,3 @@
-// app/[code]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
@@ -7,7 +6,6 @@ export async function GET(
   context: { params: Promise<{ code: string }> }
 ) {
   try {
-    // 👇 Next 16: params is a Promise, so we await it
     const { code } = await context.params;
 
     if (!code) {
