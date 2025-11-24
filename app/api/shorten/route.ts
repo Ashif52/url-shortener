@@ -1,48 +1,71 @@
-// app/api/shorten/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { randomUUID } from "crypto";
 
-export async function POST(req: Request) {
+function generateCode(length = 6) {
+  const chars =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let out = "";
+  for (let i = 0; i < length; i++) {
+    out += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return out;
+}
+
+export async function POST(req: NextRequest) {
   try {
     const { url } = await req.json();
-
     if (!url || typeof url !== "string") {
-      return NextResponse.json({ error: "Missing url" }, { status: 400 });
+      return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    // basic validation
-    try {
-      new URL(url);
-    } catch {
-      return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
-    }
+    // 🔹 read or create ownerId from cookies
+    const cookieHeader = req.headers.get("cookie") || "";
+    let ownerId =
+      cookieHeader
+        .split(";")
+        .find((c) => c.trim().startsWith("ownerId="))
+        ?.split("=")[1] || randomUUID();
 
-    const code = Math.random().toString(36).slice(2, 8);
+    const shortCode = generateCode();
 
+    // 🔹 store the LONG URL in DB (target/original)
     const record = await prisma.url.create({
       data: {
         orginalUrl: url,
-        shortCode: code,
-        target: url,
+        shortCode,
+        target: url,   // long URL we will redirect to
+        ownerId,
       },
     });
 
+    // 🔹 build the REAL short URL on our domain
     const base =
-      process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
+      process.env.NEXT_PUBLIC_BASE_URL ?? req.nextUrl.origin;
+    const shortUrl = `${base}/${record.shortCode}`;
 
-    return NextResponse.json(
+    // 🔹 send response + set cookie
+    const res = NextResponse.json(
       {
-        shortUrl: `${base}/${record.shortCode}`,
+        shortUrl,           // ✅ now really short
         code: record.shortCode,
-        originalUrl: record.orginalUrl,
-        visits: record.visits,
       },
-      { status: 201 }
+      { status: 200 }
     );
+
+    res.cookies.set("ownerId", ownerId, {
+      maxAge: 60 * 60 * 24 * 365,
+      httpOnly: false,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return res;
   } catch (err) {
-    console.error("shorten error:", err);
+    console.error("POST /api/shorten error:", err);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Server error" },
       { status: 500 }
     );
   }
