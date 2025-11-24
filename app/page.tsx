@@ -1,4 +1,3 @@
-// app/page.tsx
 import UrlShortenerContainer from "@/components/url-shortener-container";
 import { prisma } from "@/lib/db";
 import { headers } from "next/headers";
@@ -9,7 +8,6 @@ export default async function HomePage() {
   const base =
     process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
-  // ✅ Next 16: headers() is async
   const headersList = await headers();
   const cookieHeader = headersList.get("cookie") ?? "";
 
@@ -20,7 +18,6 @@ export default async function HomePage() {
       ?.split("=")[1] ?? null;
 
   const urls = await prisma.url.findMany({
-    // if no ownerId yet, return no rows
     where: ownerId ? { ownerId } : { ownerId: "__none__" },
     orderBy: { createdAt: "desc" },
     take: 10,
